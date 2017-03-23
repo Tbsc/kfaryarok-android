@@ -1,15 +1,14 @@
 package io.github.kfaryarok.kfaryarokapp.updates;
 
-import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import io.github.kfaryarok.kfaryarokapp.R;
-import io.github.kfaryarok.kfaryarokapp.util.ClassUtil;
-import io.github.kfaryarok.kfaryarokapp.util.ScreenUtil;
+import io.github.kfaryarok.kfaryarokapp.util.PreferenceUtil;
 
 /**
  * Update adapter for creating cards to display in the recycler view.
@@ -38,17 +37,9 @@ public class UpdateAdapter extends RecyclerView.Adapter<UpdateAdapter.UpdateView
         View itemView = holder.itemView;
         Update update = mUpdates[position];
 
-        // set short text
-        TextView tvShort = (TextView) itemView.findViewById(R.id.tv_updatecard_text);
-        String text = " " + update.getText();
-        tvShort.setText(text); // so android studio won't complain about concatenation
-
-        // allow viewing long text if there is one
-        if (update.hasLongText()) {
-            // shows more button
-            View btnMore = itemView.findViewById(R.id.view_updatecard_more);
-            btnMore.setVisibility(View.VISIBLE);
-        }
+        // set text
+        TextView tvText = (TextView) itemView.findViewById(R.id.tv_updatecard_text);
+        tvText.setText(update.getText());
 
         // set class
         TextView tvClass = (TextView) itemView.findViewById(R.id.tv_updatecard_class);
@@ -57,31 +48,15 @@ public class UpdateAdapter extends RecyclerView.Adapter<UpdateAdapter.UpdateView
             tvClass.setText(R.string.global_update);
         } else {
             // appends all classes to the class textview
-            // TODO make so that your class is appended first
             if (update.getAffected() instanceof ClassesAffected) {
+                // get user's class
+                String userClass = PreferenceUtil.getClassPreference(holder.itemView.getContext());
+
+                // get the affected instance
                 ClassesAffected affected = (ClassesAffected) update.getAffected();
-                tvClass.setText("");
-                String[] classesAffected = affected.getClassesAffected();
-                for (int i = 0; i < classesAffected.length; i++) {
-                    // if class is in English, convert to Hebrew
-                    String clazz = ClassUtil.checkValidEnglishClassName(classesAffected[i]) ?
-                            ClassUtil.convertEnglishClassToHebrew(classesAffected[i]) : classesAffected[i];
 
-                    tvClass.append(clazz);
-
-                    // once text length reaches certain size, stop appending and add 3 dots
-                    Rect bounds = new Rect();
-                    tvClass.getPaint().getTextBounds(tvClass.getText().toString(), 0, tvClass.getText().length(), bounds);
-                    if (ScreenUtil.pxToDp(bounds.width()) >= 120) {
-                        tvClass.append("...");
-                        break;
-                    }
-
-                    if (i != classesAffected.length - 1) {
-                        tvClass.append(", ");
-                    }
-                }
-
+                // set class textview to show affected classes, with user's class first
+                tvClass.setText(UpdateHelper.formatClassString(affected.getClassesAffected(), userClass));
             }
         }
     }
@@ -93,17 +68,22 @@ public class UpdateAdapter extends RecyclerView.Adapter<UpdateAdapter.UpdateView
 
     public class UpdateViewHolder extends RecyclerView.ViewHolder {
 
-        public UpdateViewHolder(View itemView) {
+        public UpdateViewHolder(final View itemView) {
             super(itemView);
 
             // hacky way to handle clicks, but it works i guess
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // if should be able to press, then call handler
-                    if (mUpdates[getAdapterPosition()].hasLongText()) {
-                        mClickHandler.onClickCard(mUpdates[getAdapterPosition()]);
-                    }
+                    mClickHandler.onClickCard(mUpdates[getAdapterPosition()]);
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    mClickHandler.onClickOptions(mUpdates[getAdapterPosition()], (Button) v.findViewById(R.id.btn_updatecard_options));
+                    return true;
                 }
             });
 
@@ -111,7 +91,7 @@ public class UpdateAdapter extends RecyclerView.Adapter<UpdateAdapter.UpdateView
             itemView.findViewById(R.id.btn_updatecard_options).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mClickHandler.onClickOptions(mUpdates[getAdapterPosition()]);
+                    mClickHandler.onClickOptions(mUpdates[getAdapterPosition()], (Button) v);
                 }
             });
         }
@@ -119,7 +99,7 @@ public class UpdateAdapter extends RecyclerView.Adapter<UpdateAdapter.UpdateView
 
     public interface UpdateAdapterOnClickHandler {
         void onClickCard(Update update);
-        void onClickOptions(Update update);
+        void onClickOptions(Update update, Button buttonView); /* bypassing limitations */
     }
 
 }
