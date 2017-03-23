@@ -9,7 +9,8 @@ android:
     - extra-android-m2repository
     - extra-android-support
   licenses:
-    - '*'
+    - 'android-sdk-license-25'
+    - 'build-tools-25.0.2'
 script:
   - cd app
   - chmod +x ./gradlew
