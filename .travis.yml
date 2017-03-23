@@ -10,8 +10,8 @@ android:
     - extra-android-support
   licenses:
     - 'android-sdk-license'
+    - 'google-gdk-license'
 script:
   - cd app
-  - ls /usr/local/android-sdk/licenses
   - chmod +x ./gradlew
   - ./gradlew build connectedCheck
