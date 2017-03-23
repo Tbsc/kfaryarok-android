@@ -14,6 +14,7 @@ android:
 script:
   - sudo mkdir /usr/local/android-sdk/licenses
   - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > sudo tee /usr/local/android-sdk/licenses/android-sdk-license
+  - cat /usr/local/android-sdk/licenses/android-sdk-license
   - cd app
   - chmod +x ./gradlew
-  - ./gradlew build connectedCheck --debug --stacktrace
+  - ./gradlew build connectedCheck
