@@ -1,5 +1,4 @@
 language: android
-sudo: required
 jdk: oraclejdk8
 
 android:
@@ -10,7 +9,7 @@ android:
     - extra-android-support
   licenses:
     - 'android-sdk-license-25'
-    - 'build-tools-25.0.2'
+    
 script:
   - cd app
   - chmod +x ./gradlew
