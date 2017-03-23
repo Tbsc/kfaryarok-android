@@ -14,4 +14,4 @@ android:
 script:
   - cd app
   - chmod +x ./gradlew
-  - ./gradlew build connectedCheck
+  - ./gradlew build connectedCheck --info --stacktrace
